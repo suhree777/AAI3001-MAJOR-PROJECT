@@ -31,11 +31,6 @@ def visualize_annotations(image_path, annotations):
         pts = pts.reshape((-1, 1, 2))
         cv2.polylines(image, [pts], isClosed=True, color=(0, 255, 255), thickness=2)
 
-    # Display the image with bounding boxes
-    cv2.imshow("Visualized Image", image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
 # to save item in a new folder
 def save_visualized_image(image_path, annotations, save_path):
     # Read image
