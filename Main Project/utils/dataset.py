@@ -29,14 +29,20 @@ class MoNuSegDataset(Dataset):
         img_path = self.image_paths[idx]
         img = Image.open(img_path).convert('RGB')
 
+        # Load the corresponding mask
         mask_name = os.path.basename(img_path).replace('.tif', '.png')
         mask_path = os.path.join(self.mask_dir, mask_name)
         mask = Image.open(mask_path).convert('L')
 
+        # Convert images to tensors
         img = self.transform(img)
         mask = self.transform(mask)
 
-        return img, mask
+        # Apply the mask to the original image
+        img_with_mask = img.clone()
+        img_with_mask[0, mask != 0] = 1.0  # Assuming img is in range [0, 1]
+
+        return img_with_mask, mask
 
     def _create_masks(self):
         for img_path, annotation_path in zip(self.image_paths, self.annotation_paths):
