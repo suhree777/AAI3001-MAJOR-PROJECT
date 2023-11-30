@@ -44,6 +44,11 @@ def save_visualized_image(image_path, annotations, save_path):
 
     # Save the image with bounding boxes
     filename = os.path.basename(image_path)
+    
+     # Check if the save_path directory exists, if not, create it
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+        
     save_path = os.path.join(save_path, f"visualized_{os.path.splitext(filename)[0]}_{len(annotations)}.png")
     cv2.imwrite(save_path, image)
 

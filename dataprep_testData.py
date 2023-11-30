@@ -44,7 +44,12 @@ def save_visualized_image(image_path, annotations, save_path):
 
     # Save the image with bounding boxes
     filename = os.path.basename(image_path)
-    save_path = os.path.join(save_path, f"visualized_{os.path.splitext(filename)[0]}_{len(annotations)}.png")
+    
+    # Check if the save_path directory exists, if not, create it
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+        
+    save_path = os.path.join(save_path, f"test_visualized_{os.path.splitext(filename)[0]}_{len(annotations)}.png")
     cv2.imwrite(save_path, image)
 
 def load_monuseg_dataset(data_path, save_path=None):
@@ -69,7 +74,7 @@ def load_monuseg_dataset(data_path, save_path=None):
             print(f"Warning: Annotation file not found for image {image_path}.")
 
 # File Path, change accordingly
-data_path = '/content/drive/MyDrive/MoNuSeg/MoNuSegTestData/MoNuSegTestData'
-save_path = '/content/drive/MyDrive/MoNuSeg/MoNuSegAnnotatedImages_TestData'
+data_path = 'MoNuSegTestData'
+save_path = 'MoNuSegAnnotatedImages_TestData'
 
 load_monuseg_dataset(data_path, save_path)
