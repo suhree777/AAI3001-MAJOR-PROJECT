@@ -1,75 +1,91 @@
 import os
-import numpy as np
-import torch
-from torch.utils.data import Dataset
-from PIL import Image
-import xml.etree.ElementTree as ET
 import cv2
+import xml.etree.ElementTree as ET
+import numpy as np
+from torch.utils.data import Dataset
 from torchvision import transforms
+from PIL import Image
+
 
 class MoNuSegDataset(Dataset):
-    def __init__(self, image_paths, mask_dir, annotation_paths=None, transform=None):
+    def __init__(self, image_paths, annotation_paths, mask_dir, transform=None):
         self.image_paths = image_paths
-        self.mask_dir = mask_dir
         self.annotation_paths = annotation_paths
+        self.mask_dir = mask_dir
         self.transform = transform or transforms.ToTensor()
-
         # Ensure the mask directory exists
         if not os.path.exists(mask_dir):
             os.makedirs(mask_dir)
-
-        # If annotation paths are provided, create masks
-        if annotation_paths is not None:
-            self._create_masks()
+        
 
     def __len__(self):
         return len(self.image_paths)
 
-    def __getitem__(self, idx):
-        img_path = self.image_paths[idx]
-        img = Image.open(img_path).convert('RGB')
+    def __getitem__(self, index):
+        image_path = self.image_paths[index]
+        annotation_path = self.annotation_paths[index]
 
-        # Load the corresponding mask
-        mask_name = os.path.basename(img_path).replace('.tif', '.png')
-        mask_path = os.path.join(self.mask_dir, mask_name)
-        mask = Image.open(mask_path).convert('L')
+        if os.path.exists(annotation_path):
+            annotations = self.parse_xml(annotation_path)
 
-        # Convert images to tensors
-        img = self.transform(img)
-        mask = self.transform(mask)
+            # Read image
+            image = cv2.imread(image_path)
+            #image = Image.open(image_path).convert('RGB')
 
-        # Apply the mask to the original image
-        img_with_mask = img.clone()
-        img_with_mask[0, mask != 0] = 1.0  # Assuming img is in range [0, 1]
+            # Visualize annotations on the image
+            self.visualize_annotations(image, annotations)
 
-        return img_with_mask, mask
+            # Save the visualized image to the specified directory
+            filename = os.path.basename(image_path)
+            save_filename = f"visualized_{os.path.splitext(filename)[0]}_{len(annotations)}.png"
+            save_path = os.path.join(self.mask_dir, save_filename)
 
-    def _create_masks(self):
-        for img_path, annotation_path in zip(self.image_paths, self.annotation_paths):
-            mask_name = os.path.basename(img_path).replace('.tif', '.png')
-            mask_path = os.path.join(self.mask_dir, mask_name)
+            # Check if the save_path directory exists, if not, create it
+            if not os.path.exists(self.mask_dir):
+                os.makedirs(self.mask_dir)
 
-            if not os.path.exists(mask_path):
-                self._create_mask(annotation_path, Image.open(img_path).size, mask_path)
+            self.save_visualized_image(image, annotations, save_path)
 
-    def _create_mask(self, xml_path, img_shape, mask_path):
-        mask = self._xml_to_mask(xml_path, img_shape)
-        mask_image = Image.fromarray(mask)
-        mask_image.save(mask_path)
+            # Assuming you want to return the image and annotations for training
+            return image, annotations
+        else:
+            print(f"Warning: Annotation file not found for image {image_path}.")
 
-    def _xml_to_mask(self, xml_file, img_shape):
-        tree = ET.parse(xml_file)
+
+    def parse_xml(self, xml_path):
+        tree = ET.parse(xml_path)
         root = tree.getroot()
-        mask = np.zeros(img_shape[:2], dtype=np.uint8)  # Assuming img_shape is in (H, W) format
 
-        for region in root.iter('Region'):
-            polygon = []
-            for vertex in region.iter('Vertex'):
-                x = int(float(vertex.get('X')))
-                y = int(float(vertex.get('Y')))
-                polygon.append((x, y))
+        # Extract bounding box coordinates from the Vertices section
+        boxes = []
+        for region in root.findall('.//Region'):
+            vertices = region.find('.//Vertices')
+            if vertices is not None:
+                box = [(float(vertex.get('X')), float(vertex.get('Y'))) for vertex in vertices.findall('.//Vertex')]
+                boxes.append(box)
+            else:
+                print("Warning: Vertices not found in XML. Region information:")
+                print(f"Region XML content:\n{ET.tostring(region, encoding='utf-8').decode('utf-8')}")
+                print(f"XML path: {xml_path}")
 
-            np_polygon = np.array([polygon], dtype=np.int32)
-            cv2.fillPoly(mask, np_polygon, 255)  # Fill polygon with 255
+        return boxes
 
-        return mask
+    def visualize_annotations(self, image, annotations):
+        # Draw bounding boxes on the image
+        for vertices in annotations:
+            pts = np.array(vertices, np.int32)
+            pts = pts.reshape((-1, 1, 2))
+            cv2.polylines(image, [pts], isClosed=True, color=(0, 255, 255), thickness=2)
+
+
+    def save_visualized_image(self, image, annotations, save_path):
+        # Draw bounding boxes on the image
+        for vertices in annotations:
+            pts = np.array(vertices, np.int32)
+            pts = pts.reshape((-1, 1, 2))
+            cv2.polylines(image, [pts], isClosed=True, color=(0, 255, 255), thickness=2)
+
+        # Save the image with bounding boxes
+        filename = os.path.basename(save_path)
+        cv2.imwrite(save_path, image)
+
