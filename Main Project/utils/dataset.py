@@ -1,48 +1,69 @@
 import os
-import cv2
+import numpy as np
 import torch
 from torch.utils.data import Dataset
-from xml.etree import ElementTree as ET
-import numpy as np
+from PIL import Image
+import xml.etree.ElementTree as ET
+import cv2
+from torchvision import transforms
 
 class MoNuSegDataset(Dataset):
-    def __init__(self, image_paths, annotation_dir, transform=None):
+    def __init__(self, image_paths, mask_dir, annotation_paths=None, transform=None):
         self.image_paths = image_paths
-        self.annotation_dir = annotation_dir
-        self.transform = transform
+        self.mask_dir = mask_dir
+        self.annotation_paths = annotation_paths
+        self.transform = transform or transforms.ToTensor()
+
+        # Ensure the mask directory exists
+        if not os.path.exists(mask_dir):
+            os.makedirs(mask_dir)
+
+        # If annotation paths are provided, create masks
+        if annotation_paths is not None:
+            self._create_masks()
 
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, idx):
-        image_path = self.image_paths[idx]
-        annotation_path = self._get_annotation_path(image_path)
+        img_path = self.image_paths[idx]
+        img = Image.open(img_path).convert('RGB')
 
-        # Read image
-        image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        mask_name = os.path.basename(img_path).replace('.tif', '.png')
+        mask_path = os.path.join(self.mask_dir, mask_name)
+        mask = Image.open(mask_path).convert('L')
 
-        # Apply transformation if provided
-        if self.transform:
-            image = self.transform(image)
+        img = self.transform(img)
+        mask = self.transform(mask)
 
-        # Read XML annotations and create a mask
-        mask = self._create_mask(annotation_path, image.shape[:2])
+        return img, mask
 
-        # Convert to PyTorch tensors
-        image = torch.from_numpy(image.transpose((2, 0, 1))).float()
-        mask = torch.from_numpy(mask).float()
+    def _create_masks(self):
+        for img_path, annotation_path in zip(self.image_paths, self.annotation_paths):
+            mask_name = os.path.basename(img_path).replace('.tif', '.png')
+            mask_path = os.path.join(self.mask_dir, mask_name)
 
-        return {'image': image, 'mask': mask}
+            if not os.path.exists(mask_path):
+                self._create_mask(annotation_path, Image.open(img_path).size, mask_path)
 
-    def _get_annotation_path(self, image_path):
-        # Generate the annotation file path based on the image path
-        return os.path.join(self.annotation_dir, os.path.splitext(os.path.basename(image_path))[0] + '.xml')
+    def _create_mask(self, xml_path, img_shape, mask_path):
+        mask = self._xml_to_mask(xml_path, img_shape)
+        mask_image = Image.fromarray(mask)
+        mask_image.save(mask_path)
 
-    def _create_mask(self, annotation_path, image_shape):
-        # Implement logic to read XML annotations and create a mask
-        # This could involve parsing the XML file and creating a binary mask
-        # based on the region information in the XML
-        # For simplicity, we'll create an empty mask for now
-        mask = np.zeros(image_shape, dtype=np.uint8)
+    def _xml_to_mask(self, xml_file, img_shape):
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        mask = np.zeros(img_shape[:2], dtype=np.uint8)  # Assuming img_shape is in (H, W) format
+
+        for region in root.iter('Region'):
+            polygon = []
+            for vertex in region.iter('Vertex'):
+                x = int(float(vertex.get('X')))
+                y = int(float(vertex.get('Y')))
+                polygon.append((x, y))
+
+            np_polygon = np.array([polygon], dtype=np.int32)
+            cv2.fillPoly(mask, np_polygon, 255)  # Fill polygon with 255
+
         return mask

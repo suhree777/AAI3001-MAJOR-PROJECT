@@ -12,7 +12,7 @@ from utils.eval_metrics import iou, evaluate_model
 
 
 # Set device for training
-device = torch.device("mps")
+device = torch.device("cpu")
 
 # Load Data
 ## For Train and Val 
