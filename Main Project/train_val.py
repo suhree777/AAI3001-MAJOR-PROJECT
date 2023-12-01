@@ -18,7 +18,6 @@ from PIL import Image
 # Set device for training
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
 # Load Data
 ## For Train and Val 
 image_dir = './dataset/train_dataset/Tissue Images'
