@@ -22,7 +22,7 @@ test_dataset = MoNuSegDataset(
     image_paths=test_image_paths,
     annotation_paths=test_annotation_paths,
     mask_dir='dataset/test/masked',
-    transform=None  # You might want to add any necessary transformations here
+    transform=None
 )
 
 batch_size = 4
