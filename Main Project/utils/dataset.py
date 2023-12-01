@@ -81,6 +81,6 @@ class MoNuSegDataset(Dataset):
                 polygon.append((x, y))
 
             np_polygon = np.array([polygon], dtype=np.int32)
-            cv2.polylines(mask, np_polygon, 255)  # Fill polygon with white color (255)
+            cv2.fillPoly(mask, np_polygon, 255)  # Fill polygon with white color (255)
 
         return mask
