@@ -10,7 +10,7 @@ import json
 from train_val import test_annotation_paths
 
 # Set device
-device = torch.device("cuda" if torch.cuda.is_available() else "mps")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load Test Data
 ## Test Dataset

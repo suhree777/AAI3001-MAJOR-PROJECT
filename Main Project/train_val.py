@@ -13,14 +13,14 @@ from utils.eval_metrics import iou
 
 
 # Set device for training
-device = torch.device("cuda" if torch.cuda.is_available() else "mps")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load Data
 ## For Train and Val 
-image_dir = './dataset/train_dataset/Tissue Images'
-annotation_dir = './dataset/train_dataset/Annotations'
+image_dir = r'Main Project\dataset\train_dataset\Tissue Images'
+annotation_dir = r'Main Project\dataset\train_dataset\Annotations'
 ## For Test
-test_data_dir = './dataset/test_dataset'
+test_data_dir = r'Main Project\dataset\test_dataset'
 
 
 # Create file paths for images and annotations
