@@ -9,11 +9,15 @@ import torch.optim as optim
 import torch.nn as nn
 import matplotlib.pyplot as plt
 from utils.eval_metrics import iou
+from torchvision import transforms
+from PIL import Image
+
 
 
 
 # Set device for training
-device = torch.device("cuda" if torch.cuda.is_available() else "mps")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # Load Data
 ## For Train and Val 
@@ -46,13 +50,34 @@ with open('test_images.json', 'w') as f:
     json.dump(test_image_paths, f)
 
 
+## Data Augmentations
+transform = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+    transforms.RandomVerticalFlip(),
+    transforms.RandomRotation(degrees=30),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+    ])
+
+def apply_transform(img):
+    # Convert PIL Image to tensor
+    if isinstance(img, Image.Image):
+        img = transforms.ToTensor()(img)
+
+    # Check if img is a tensor
+    if isinstance(img, torch.Tensor):
+        # Check the number of channels
+        if img.shape[0] == 3:
+            img = transform(img)
+    
+    return img
+
 
 ## Mask Training Dataset
 train_dataset = MoNuSegDataset(
     image_paths=train_image_paths, 
     annotation_paths=train_annotation_paths, 
     mask_dir='dataset/train/masked',
-    transform=None
+    transform=apply_transform
 )
 
 ## Mask Val Dataset
@@ -62,9 +87,6 @@ val_dataset = MoNuSegDataset(
     mask_dir='dataset/val/masked',
     transform=None
 )
-
-
-
 
 
 ## Check if datasets are disjoint
@@ -123,6 +145,11 @@ def main():
 
         for images, masks in train_loader:
             images, masks = images.to(device), masks.to(device)
+            
+            # Apply data augmentation
+            if transform:
+                images = torch.stack([transform(img) for img in images])
+                
             outputs = model(images)
             loss = criterion(outputs, masks)
             total_train_loss += loss.item()
@@ -148,8 +175,13 @@ def main():
                 val_outputs = model(val_images)
                 val_loss = criterion(val_outputs, val_masks)
                 total_val_loss += val_loss.item()
+                # Apply data augmentation if needed
+                if transform:
+                    val_images_transformed = torch.stack([transform(img) for img in val_images])
+                    val_preds = torch.sigmoid(model(val_images_transformed)) > 0.5
+                else:
+                    val_preds = torch.sigmoid(val_outputs) > 0.5
 
-                val_preds = torch.sigmoid(val_outputs) > 0.5
                 total_val_iou += iou(val_preds, val_masks).item()
 
         val_losses.append(total_val_loss / len(val_loader))
