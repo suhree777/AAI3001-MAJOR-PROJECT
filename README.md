@@ -5,6 +5,7 @@ This project implements a U-Net model for tissue cell segmentation using PyTorch
 Main Project/
 
 ├── dataset/
+
 │   ├── train_dataset/
 
 │   │   ├── Tissue Images/
@@ -58,3 +59,32 @@ Validate the model performance using IoU.
 Plot the training/validation loss and IoU.
 Save the trained model as trained_unet.pth
 
+## Testing
+To test the model on a separate test dataset, run the test.py script:
+
+python test.py
+
+This script will:
+
+Load the test dataset and perform inference using the trained U-Net model.
+Calculate test loss, IoU, and surface distance metrics.
+Visualize a few test predictions with their corresponding ground truth masks.
+
+## Results
+Metrics: The model’s performance is evaluated using:
+IoU: Intersection over Union, a measure of overlap between the predicted and true masks.
+Surface Distance: A metric used to measure how close the predicted mask boundaries are to the ground truth.
+Visualization: The test script includes a visualization of the original image, predicted mask, and true mask side-by-side.
+
+## Data Preprocessing
+The images and masks are preprocessed using the MoNuSegDataset class defined in utils/dataset.py. This handles loading the images, annotations, and creating masks from the annotations.
+
+## Model
+The model architecture is a U-Net, which is commonly used for segmentation tasks. The implementation can be found in models/u_net.py.
+
+## Key Files
+train_val.py: Script for training and validating the U-Net model.
+test.py: Script for testing the model on the test dataset.
+u_net.py: The U-Net model implementation.
+dataset.py: Dataset handling and preprocessing.
+eval_metrics.py: Functions for calculating IoU and surface distance metrics.
