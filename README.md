@@ -4,19 +4,33 @@ This project implements a U-Net model for tissue cell segmentation using PyTorch
 ## Project Structure:
 Main Project/
 ├── dataset/
+
 │   ├── train_dataset/
+
 │   │   ├── Tissue Images/
+
 │   │   ├── Annotations/
+
 │   ├── test_dataset/
+
 │   │   ├── Tissue Images/
+
 │   │   ├── Annotations/
+
 ├── utils/
+
 │   ├── dataset.py
+
 │   ├── eval_metrics.py
+
 ├── models/
+
 │   ├── u_net.py
+
 ├── train_val.py
+
 ├── test.py
+
 └── trained_unet.pth
 
 ## Dataset
