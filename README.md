@@ -2,6 +2,7 @@
 This project implements a U-Net model for tissue cell segmentation using PyTorch. It focuses on Multi-Organ Nucleus Segmentation (Monuseg), training the model with annotated images, and evaluating the performance using metrics like IoU (Intersection over Union) and surface distance.
 
 [Monuseg.pptx](https://github.com/user-attachments/files/16991337/Monuseg.pptx)
+
 ![Figure_2](https://github.com/user-attachments/assets/577b3081-6565-41b3-9ba1-e6f99787b707)
 
 
@@ -53,7 +54,9 @@ PIL
 ## Training
 To train the model on the dataset, you can run the train_val.py script:
 
+```ruby
 python train_val.py
+```
 
 This script will:
 
@@ -66,7 +69,9 @@ Save the trained model as trained_unet.pth
 ## Testing
 To test the model on a separate test dataset, run the test.py script:
 
+```ruby
 python test.py
+```
 
 This script will:
 
