@@ -1,11 +1,7 @@
 # AAI3001-MAJOR-PROJECT
 This project implements a U-Net model for tissue cell segmentation using PyTorch. It focuses on Multi-Organ Nucleus Segmentation (Monuseg), training the model with annotated images, and evaluating the performance using metrics like IoU (Intersection over Union) and surface distance.
 
-![TCGA-18-5592-01Z-00-DX1](https://github.com/user-attachments/assets/97671771-c0eb-406c-bb64-a83b91252258)
-
-<p float="left">
-  <img src="https://github.com/user-attachments/assets/97671771-c0eb-406c-bb64-a83b91252258" width="100" />
-</p>
+![TCGA-18-5592-01Z-00-DX1](https://github.com/user-attachments/assets/c7eb68c0-bfd4-4b25-81d1-6edf97db08b1)
 
 [Monuseg.pptx](https://github.com/user-attachments/files/16991498/Monuseg.pptx)
 
