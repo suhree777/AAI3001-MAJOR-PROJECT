@@ -85,6 +85,10 @@ IoU: Intersection over Union, a measure of overlap between the predicted and tru
 Surface Distance: A metric used to measure how close the predicted mask boundaries are to the ground truth.
 Visualization: The test script includes a visualization of the original image, predicted mask, and true mask side-by-side.
 
+
+![Figure_2](https://github.com/user-attachments/assets/577b3081-6565-41b3-9ba1-e6f99787b707)
+
+
 ## Data Preprocessing
 The images and masks are preprocessed using the MoNuSegDataset class defined in utils/dataset.py. This handles loading the images, annotations, and creating masks from the annotations.
 
