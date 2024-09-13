@@ -3,6 +3,10 @@ This project implements a U-Net model for tissue cell segmentation using PyTorch
 
 ![TCGA-18-5592-01Z-00-DX1](https://github.com/user-attachments/assets/97671771-c0eb-406c-bb64-a83b91252258)
 
+<p float="left">
+  <img src="https://github.com/user-attachments/assets/97671771-c0eb-406c-bb64-a83b91252258" width="100" />
+</p>
+
 [Monuseg.pptx](https://github.com/user-attachments/files/16991498/Monuseg.pptx)
 
 ## Project Structure:
